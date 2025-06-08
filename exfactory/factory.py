@@ -19,7 +19,8 @@ class Factory[OBJ, CC](MathObj, abc.ABC):
 # ファクトリからインスタンスを生成する関数
 def product[OBJ, CC](item:Factory[OBJ, CC]|OBJ, cc:CC=None) -> OBJ:
     """ファクトリからインスタンスを生成"""
-    if isinstance(item, Factory): return item._Factory__product(cc)
+    if isinstance(item, Factory):
+        return item._Factory__product(cc)
     return item
 
 # Factoryのサブクラス
@@ -29,14 +30,17 @@ class Construct[OBJ, CC](Factory[OBJ, CC]):
         self.__c = c
         self.__a = a
         self.__ka = ka
-    def _Factory__product(self, cc): return product(self.__c, cc)(
-        *[product(i, cc) for i in self.__a],
-        **{k:product(i, cc) for k, i in self.__ka.items()})
+    def _Factory__product(self, cc):
+        return product(self.__c, cc)(
+            *[product(i, cc) for i in self.__a],
+            **{k:product(i, cc) for k, i in self.__ka.items()})
 
 class Wrap[OBJ](Factory[OBJ, Any]):
     """オブジェクトをファクトリに変換"""
-    def __init__(self, o:OBJ): self.__o = o
-    def _Factory__product(self, cc): return self.__o
+    def __init__(self, o:OBJ):
+        self.__o = o
+    def _Factory__product(self, cc):
+        return self.__o
 
 class Context[CC](Factory[CC, CC]):
     """コンテキストファクトリ"""
@@ -52,10 +56,14 @@ class Constructs[CONT, OBJ, CC](Factory[CONT, CC]):
         self.__obj = obj
     def _Factory__product(self, cc):
         def iterate(itr, *itrs):
-            if itrs: return product(self.__c, cc)(
-                iterate(*itrs) for _ in range(product(itr, cc)))
-            else: return product(self.__c, cc)(
-                product(self.__obj, cc) for _ in range(product(itr, cc)))
+            if itrs:
+                return product(self.__c, cc)(
+                    iterate(*itrs)
+                    for _ in range(product(itr, cc)))
+            else:
+                return product(self.__c, cc)(
+                    product(self.__obj, cc)
+                    for _ in range(product(itr, cc)))
         return iterate(*self.__cnts)
 
 class Once[OBJ, CC](Factory[OBJ, CC]):
@@ -64,5 +72,6 @@ class Once[OBJ, CC](Factory[OBJ, CC]):
         self.__f = f
         self.__o = None
     def _Factory__product(self, cc):
-        if self.__o is None: self.__o = product(self.__f, cc)
+        if self.__o is None:
+            self.__o = product(self.__f, cc)
         return self.__o
