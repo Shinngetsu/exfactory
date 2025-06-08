@@ -4,4 +4,9 @@ setup(
     version='0.1.0',
     author='Sinngetsu',
     packages=find_packages(),
+    url='https://github.com/Shinngetsu/exfactory.git',
+    license='MIT',
+    description='A factory for creating examples of Python objects.',
+    long_description=open('README.md').read(),
+    long_description_content_type='text/markdown',
 )
