@@ -8,7 +8,7 @@ from typing import Any
 class Factory[OBJ, CC](MathObj, abc.ABC):
     """ファクトリの抽象クラス"""
     @abc.abstractmethod
-    def _Factory__product(self, cc:CC) -> OBJ: pass
+    def _Factory__product(self, cc:CC, vc:dict) -> OBJ: pass
     def _unary(self, uf): return Construct(uf, self)
     def _binary(self, bf, b): return Construct(bf, self, b)
     def _rbinary(self, bf, a): return Construct(bf, a, self)
@@ -17,8 +17,9 @@ class Factory[OBJ, CC](MathObj, abc.ABC):
     def __call__(self, *a, **ka): return Construct(self, *a, **ka)
 
 # ファクトリからインスタンスを生成する関数
-def product[OBJ, CC](item:Factory[OBJ, CC]|OBJ, cc:CC=None) -> OBJ:
+def product[OBJ, CC](item:Factory[OBJ, CC]|OBJ, cc:CC=None, vc:dict=None) -> OBJ:
     """ファクトリからインスタンスを生成"""
+    if vc is None: vc = {}
     if isinstance(item, Factory):
         return item._Factory__product(cc)
     return item
@@ -30,21 +31,21 @@ class Construct[OBJ, CC](Factory[OBJ, CC]):
         self.__c = c
         self.__a = a
         self.__ka = ka
-    def _Factory__product(self, cc):
-        return product(self.__c, cc)(
-            *[product(i, cc) for i in self.__a],
-            **{k:product(i, cc) for k, i in self.__ka.items()})
+    def _Factory__product(self, cc, vc):
+        return product(self.__c, cc, vc)(
+            *[product(i, cc, vc) for i in self.__a],
+            **{k:product(i, cc, vc) for k, i in self.__ka.items()})
 
 class Wrap[OBJ](Factory[OBJ, Any]):
     """オブジェクトをファクトリに変換"""
     def __init__(self, o:OBJ):
         self.__o = o
-    def _Factory__product(self, cc):
+    def _Factory__product(self, cc, vc):
         return self.__o
 
 class Context[CC](Factory[CC, CC]):
     """コンテキストファクトリ"""
-    def _Factory__product(self, cc): return cc
+    def _Factory__product(self, cc, vc): return cc
 
 class Constructs[CONT, OBJ, CC](Factory[CONT, CC]):
     """指定されたコンテナのグリッド構造を生成するファクトリ"""
@@ -57,13 +58,13 @@ class Constructs[CONT, OBJ, CC](Factory[CONT, CC]):
     def _Factory__product(self, cc):
         def iterate(itr, *itrs):
             if itrs:
-                return product(self.__c, cc)(
+                return product(self.__c, cc, vc)(
                     iterate(*itrs)
-                    for _ in range(product(itr, cc)))
+                    for _ in range(product(itr, cc, vc)))
             else:
-                return product(self.__c, cc)(
-                    product(self.__obj, cc)
-                    for _ in range(product(itr, cc)))
+                return product(self.__c, cc, vc)(
+                    product(self.__obj, cc, vc)
+                    for _ in range(product(itr, cc, vc)))
         return iterate(*self.__cnts)
 
 class Once[OBJ, CC](Factory[OBJ, CC]):
@@ -73,5 +74,5 @@ class Once[OBJ, CC](Factory[OBJ, CC]):
         self.__o = None
     def _Factory__product(self, cc):
         if self.__o is None:
-            self.__o = product(self.__f, cc)
+            self.__o = product(self.__f, cc, vc)
         return self.__o
