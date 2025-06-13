@@ -67,12 +67,18 @@ class Constructs[CONT, OBJ, CC](Factory[CONT, CC]):
                     for _ in range(product(itr, cc, vc)))
         return iterate(*self.__cnts)
 
+import threading
 class Once[OBJ, CC](Factory[OBJ, CC]):
     """一度だけ生成されるファクトリ"""
     def __init__(self, f:Factory[OBJ, CC]|OBJ):
         self.__f = f
         self.__o = None
+        self.__lock = threading.Lock()
     def _Factory__product(self, cc):
-        if self.__o is None:
-            self.__o = product(self.__f, cc, vc)
+        self.__lock.acquire()
+        try:
+            if self.__o is None:
+                self.__o = product(self.__f, cc, vc)
+        finally:
+            self.__lock.release()
         return self.__o
