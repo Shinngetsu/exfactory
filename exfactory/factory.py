@@ -55,7 +55,7 @@ class Constructs[CONT, OBJ, CC](Factory[CONT, CC]):
         self.__c = c
         self.__cnts = cnts
         self.__obj = obj
-    def _Factory__product(self, cc):
+    def _Factory__product(self, cc, vc):
         def iterate(itr, *itrs):
             if itrs:
                 return product(self.__c, cc, vc)(
@@ -74,7 +74,7 @@ class Once[OBJ, CC](Factory[OBJ, CC]):
         self.__f = f
         self.__o = None
         self.__lock = threading.Lock()
-    def _Factory__product(self, cc):
+    def _Factory__product(self, cc, vc):
         self.__lock.acquire()
         try:
             if self.__o is None:
@@ -82,3 +82,13 @@ class Once[OBJ, CC](Factory[OBJ, CC]):
         finally:
             self.__lock.release()
         return self.__o
+
+class Var[OBJ, CC](Factory[OBJ, CC]):
+    """ファクトリ内の変数"""
+    def __init__(self, idx=None, valid=None):
+        self.__valid = valid
+        self.__id = id(self) if idx is None else idx
+    def _Factory__product(self, cc, vc):
+        value = vc[self.__id]
+        assert self.__valid is None or self.__valid(value)
+        return value
