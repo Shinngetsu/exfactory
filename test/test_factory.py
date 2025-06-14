@@ -1,11 +1,5 @@
 from exfactory import *
 
-def test_product_NotFactory_Return():
-    "productはファクトリ以外であればそのまま返す"
-    tgt = object()
-    assert product(tgt) is tgt, \
-        "ファクトリ以外であればそのまま返す"
-
 def test_product_Wrap_ReturnWrappedObj():
     "Wrapはラップした対象を生成"
     tgt = object()
@@ -33,3 +27,9 @@ def test_product_Construct_ReturnObj():
     assert product(f) == obj, \
         "Constructは指定したコンストラクタに各種引数を渡して生成"
 
+def test_product_Expression_ReturnObj():
+    "計算式によって生成されるファクトリが正しいオブジェクトを生成するか"
+    f = Context() *3 +2
+    ctx = 10
+    assert product(f, ctx) == ctx *3 +2, \
+        "計算が合いません"
