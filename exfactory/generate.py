@@ -74,6 +74,7 @@ class Generate(Factory[ctyping.Iterator[OBJ], CC]):
             """ジェネレータを再帰的に呼び出して要素を生成"""
             if generators:
                 store, iter, *pred = generators[0]
+                pred += True,
                 for value in product(iter, cc, vc):
                     ivc = vc | store_var(store, value)
                     if all(product(p, cc, ivc) for p in pred):
