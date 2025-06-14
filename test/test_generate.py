@@ -68,7 +68,6 @@ def test_product_GenerateMultiStore2_ReturnCollectValues():
     fsum = Wrap(sum)
     frange = Wrap(range)
     fzip = Wrap(zip)
-    fenumerate = Wrap(enumerate)
     f = Generate(i * fsum(j) - k,
         ((i, Star(j), k), 
             fzip(frange(1, 10),
