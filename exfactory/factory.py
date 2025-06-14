@@ -38,7 +38,7 @@ def product(
     """ファクトリからインスタンスを生成"""
     if vc is None: vc = {}
     if isinstance(item, Factory):
-        return item._Factory__product(cc)
+        return item._Factory__product(cc, vc)
     return item
 
 

@@ -1,6 +1,5 @@
 
 from .factory import Factory, PRODUCTABLE, product, OBJ, CC
-from typing import Any
 
 class Var(Factory[OBJ, CC]):
     """変数ファクトリ"""
