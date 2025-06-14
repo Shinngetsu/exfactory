@@ -3,15 +3,7 @@ from .factory import Factory, PRODUCTABLE, product, OBJ, CC
 from typing import Any
 import collections.abc as ctyping
 
-class Var(Factory[OBJ, CC]):
-    """変数ファクトリ"""
-    def __init__(self, idx=None, valid=None):
-        self.__valid = valid
-        self.__id = id(self) if idx is None else idx
-    def _Factory__product(self, cc, vc):
-        value = vc[self.__id]
-        assert self.__valid is None or self.__valid(value)
-        return value
+from .variable_and_scope import Var, var_idx
 
 class Star:
     """可変長引数を受け取るシンボル
@@ -25,13 +17,13 @@ PREDICATE = PRODUCTABLE[bool, CC]
 def store_var(
         store:STORE,
         src:OBJ| tuple[OBJ, ...]
-    ) -> dict[Var, OBJ]:
+    ) -> dict[Any, OBJ]:
     """ストアの内容を辞書に変換"""
     if isinstance(store, Var):
-        return {store: src}
+        return {var_idx(store): src}
     elif isinstance(store, Star):
         store = store.var
-        return {store: [src]}
+        return {var_idx(store): [src]}
     else:
         res = {}
         star_pos = 0
@@ -57,7 +49,7 @@ def store_var(
                 raise ValueError(
                     f"Not enough elements in source to fill store: "
                     f"store length {len(store)}, source length {len(src)}")
-            res[store[star_pos].var] = src[star_pos:-tails]
+            res[var_idx(store[star_pos].var)] = src[star_pos:-tails]
             # Star以降の要素を格納
             if tails > 0:
                 res |= store_var(store[-tails:], src[-tails:])
@@ -83,7 +75,7 @@ class Generate(Factory[ctyping.Iterator[OBJ], CC]):
             if generators:
                 store, iter, pred = generators[0]
                 for value in product(iter, cc, vc):
-                    ivc = vc | store_var(store, iter)
+                    ivc = vc | store_var(store, value)
                     if all(product(p, cc, ivc) for p in pred):
                         return generate(elt, ivc, *generators[1:])
             else:
