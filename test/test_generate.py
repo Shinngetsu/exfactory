@@ -29,3 +29,56 @@ def test_product_GenerateNestRoop_ReturnCollectValues():
         for j in range(1, 10)]
     assert all(i == j for i, j in zip(product(f), itr))
 
+def test_product_GenerateMultiStore_ReturnCollectValues():
+    "ストアがうまく機能するか検証"
+    i = Var()
+    j = Var()
+    frange = Wrap(range)
+    fzip = Wrap(zip)
+    f = Generate(i * j,
+        ((i, j), fzip(frange(1, 10), frange(1, 10))))
+    itr = [i * j
+        for i in zip(range(1, 10), range(1, 10))]
+    assert all(i == j for i, j in zip(product(f), itr))
+
+def test_product_GenerateMultiStore_ReturnCollectValues():
+    "スターストアがうまく機能するか検証"
+    i = Var()
+    j = Var()
+    fsum = Wrap(sum)
+    frange = Wrap(range)
+    fzip = Wrap(zip)
+    f = Generate(i * fsum(j),
+        ((i, Star(j)), 
+            fzip(frange(1, 10),
+                 frange(1, 10),
+                 frange(1, 10))))
+    itr = [i * sum(j)
+        for i, *j in 
+            zip(range(1, 10),
+                range(1, 10),
+                range(1, 10))]
+    assert all(i == j for i, j in zip(product(f), itr))
+
+def test_product_GenerateMultiStore2_ReturnCollectValues():
+    "スターストアがうまく機能するか検証(スター後に)"
+    i = Var()
+    j = Var()
+    k = Var()
+    fsum = Wrap(sum)
+    frange = Wrap(range)
+    fzip = Wrap(zip)
+    fenumerate = Wrap(enumerate)
+    f = Generate(i * fsum(j) - k,
+        ((i, Star(j), k), 
+            fzip(frange(1, 10),
+                 frange(1, 10),
+                 frange(1, 10),
+                 frange(1, 10))))
+    itr = [i * sum(j) - k
+        for i, *j, k in 
+            zip(range(1, 10),
+                range(1, 10),
+                range(1, 10),
+                range(1, 10))]
+    assert all(i == j for i, j in zip(product(f), itr))
