@@ -65,26 +65,6 @@ class Context(Factory[CC, CC]):
     """コンテキストファクトリ"""
     def _Factory__product(self, cc, vc): return cc
 
-class Constructs[CONT, OBJ, CC](Factory[CONT, CC]):
-    """指定されたコンテナのグリッド構造を生成するファクトリ"""
-    def __init__(self, c:type[CONT],
-            cnts:tuple[Factory[int, CC], ...],
-            obj:Factory[OBJ, CC]|OBJ):
-        self.__c = c
-        self.__cnts = cnts
-        self.__obj = obj
-    def _Factory__product(self, cc, vc):
-        def iterate(itr, *itrs):
-            if itrs:
-                return product(self.__c, cc, vc)(
-                    iterate(*itrs)
-                    for _ in range(product(itr, cc, vc)))
-            else:
-                return product(self.__c, cc, vc)(
-                    product(self.__obj, cc, vc)
-                    for _ in range(product(itr, cc, vc)))
-        return iterate(*self.__cnts)
-
 import threading
 class Once(Factory[OBJ, CC]):
     """一度だけ生成されるファクトリ"""
